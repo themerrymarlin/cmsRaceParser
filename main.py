@@ -1,6 +1,5 @@
 import json
 
-
 CAR_MODEL_TYPES = {
     0: 'Porsche 911 (991) GT3 R',
     1: 'Mercedes-AMG GT3',
@@ -41,14 +40,15 @@ CAR_MODEL_TYPES = {
 
 
 class Driver:
-    def __init__(self, driver_index, car_data, laps):
+    def __init__(self, driver_index, car_data):
         self.index = driver_index
         self.model = CAR_MODEL_TYPES.get(car_data['car']["carModel"])
-        self.name = car_data['car']['drivers'][driver_index]['lastName'] + ', ' + car_data['car']['drivers'][driver_index]['firstName']
+        self.name = car_data['car']['drivers'][driver_index]['lastName'] + ', ' + \
+                    car_data['car']['drivers'][driver_index]['firstName']
         self.steam_id = car_data['car']['drivers'][driver_index]['playerId']
         self.car_lap_total = car_data['timing']['lapCount']
         self.car_id = car_data['car']['carId']
-        self.laps = laps
+        self.laps = []
 
 
 def main():
@@ -61,19 +61,27 @@ def main():
     results_json = json.loads(results_file_stringify, strict=False)
     leader_board_lines = results_json["sessionResult"]["leaderBoardLines"]
     laps = results_json["laps"]
+    drivers = create_driver_dict(leader_board_lines)
+    add_laps(drivers, laps)
 
-    print(laps)
-    print(leader_board_lines)
-    print(leader_board_lines[0])
-    salmon = Driver(0, leader_board_lines[0], [])
-    print(salmon.name)
-    print(salmon.model)
-    print(salmon.steam_id)
-    print(salmon.car_lap_total)
+    # now for each driver (who has proper lap times) we need to sort ascending and filter any with fewer than 10 laps
 
 
-def create_driver_list(leader_board_lines, laps) -> list:
-    return []
+
+def add_laps(drivers, laps):
+    for lap in laps:
+        if lap['isValidForBest']:
+            driver = drivers[lap['carId'] + ':' + lap['driverIndex']]
+            driver.laps.append(lap['laptime'])
+
+
+def create_driver_dict(leader_board_lines) -> dict:
+    drivers = {}
+    for leader_board_line in leader_board_lines:
+        for i in range(0, len(leader_board_line['car']['drivers'])):
+            driver = Driver(i, leader_board_line)
+            drivers[driver.car_id + ':' + driver.index] = driver
+    return drivers
 
 
 if __name__ == '__main__':
