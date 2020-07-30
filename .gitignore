@@ -1,0 +1,5 @@
+*.iml
+.idea
+vcs.xml
+modules.xml
+profile_settings.xml
