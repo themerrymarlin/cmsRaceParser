@@ -50,6 +50,11 @@ class Driver:
         self.car_id = car_data['car']['carId']
         self.laps = []
 
+    def print_row(self):
+        print(self.name + ' ' + self.model)
+        for lap in self.laps:
+            print(lap)
+
 
 def main():
     # get in results file
@@ -65,13 +70,29 @@ def main():
     add_laps(drivers, laps)
 
     # now for each driver (who has proper lap times) we need to sort ascending and filter any with fewer than 10 laps
+    drivers_to_pop = []
+    for driver_key in drivers:
+        driver = drivers.get(driver_key)
+        if len(driver.laps) < 10:
+            drivers_to_pop.append(str(driver.car_id) + ':' + str(driver.index))
+        else:
+            driver.laps.sort()
+            del driver.laps[10:]
+
+    # pop, lock drop
+    for popper in drivers_to_pop:
+        drivers.pop(popper)
+
+    # and then we write to a csv, I can do this later
+    for driver_key in drivers:
+        drivers.get(driver_key).print_row()
 
 
 
 def add_laps(drivers, laps):
     for lap in laps:
         if lap['isValidForBest']:
-            driver = drivers[lap['carId'] + ':' + lap['driverIndex']]
+            driver = drivers[str(lap['carId']) + ':' + str(lap['driverIndex'])]
             driver.laps.append(lap['laptime'])
 
 
@@ -80,7 +101,7 @@ def create_driver_dict(leader_board_lines) -> dict:
     for leader_board_line in leader_board_lines:
         for i in range(0, len(leader_board_line['car']['drivers'])):
             driver = Driver(i, leader_board_line)
-            drivers[driver.car_id + ':' + driver.index] = driver
+            drivers[str(driver.car_id) + ':' + str(driver.index)] = driver
     return drivers
 
 
