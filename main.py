@@ -1,4 +1,6 @@
 import json
+import csv
+import sys
 
 CAR_MODEL_TYPES = {
     0: 'Porsche 911 (991) GT3 R',
@@ -43,8 +45,8 @@ class Driver:
     def __init__(self, driver_index, car_data):
         self.index = driver_index
         self.model = CAR_MODEL_TYPES.get(car_data['car']["carModel"])
-        self.name = car_data['car']['drivers'][driver_index]['lastName'] + ', ' + \
-                    car_data['car']['drivers'][driver_index]['firstName']
+        self.name = car_data['car']['drivers'][driver_index]['firstName'] + ' ' + \
+                    car_data['car']['drivers'][driver_index]['lastName']
         self.steam_id = car_data['car']['drivers'][driver_index]['playerId']
         self.car_lap_total = car_data['timing']['lapCount']
         self.car_id = car_data['car']['carId']
@@ -55,11 +57,15 @@ class Driver:
         for lap in self.laps:
             print(lap)
 
+    def to_csv_row(self):
+        lap_string = ':'.join(map(str, self.laps))
+        return self.name + ',' + self.model + ',' + self.steam_id + ',' + str(self.car_lap_total) + ',' + lap_string
 
-def main():
+
+def main(argv):
     # get in results file
     results_file = open(
-        "raceResults.json", "rb")
+        argv[0], "rb")
     # parse it
     results_file_stringify = results_file.read()
     results_file.close()
@@ -79,14 +85,18 @@ def main():
             driver.laps.sort()
             del driver.laps[10:]
 
-    # pop, lock drop
+    # pop, lock drop (this is the actual removal)
     for popper in drivers_to_pop:
         drivers.pop(popper)
 
     # and then we write to a csv, I can do this later
-    for driver_key in drivers:
-        drivers.get(driver_key).print_row()
+    with open('raceSummary.csv', 'a', newline='') as f:
+        writer = csv.writer(f)
+        for driver_key in drivers:
+            writer.writerow([drivers.get(driver_key).to_csv_row()])
 
+    # for driver_key in drivers:
+    #     drivers.get(driver_key).print_row()
 
 
 def add_laps(drivers, laps):
@@ -106,4 +116,4 @@ def create_driver_dict(leader_board_lines) -> dict:
 
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])
