@@ -91,9 +91,10 @@ def main(argv):
 
     # and then we write to a csv, I can do this later
     with open('raceSummary.csv', 'a', newline='') as f:
-        writer = csv.writer(f)
+        writer = csv.writer(f, quoting=csv.QUOTE_NONE)
         for driver_key in drivers:
-            writer.writerow([drivers.get(driver_key).to_csv_row()])
+            driver = drivers.get(driver_key)
+            writer.writerow([driver.name, driver.model, driver.steam_id, driver.car_lap_total, ':'.join(map(str, driver.laps))])
 
     # for driver_key in drivers:
     #     drivers.get(driver_key).print_row()
