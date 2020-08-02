@@ -15,7 +15,8 @@ def main(argv):
         if added:
             for new_file in added:
                 if new_file.endswith('.json'):
-                    race_parser.main(new_file)
+                    print("parsing: " + new_file)
+                    race_parser.main(str(path_to_watch) + '\\' + str(new_file))
         before = after
 
 
