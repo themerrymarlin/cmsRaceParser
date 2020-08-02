@@ -1,6 +1,18 @@
 import json
 import csv
 import sys
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-i", "--input", help="input file name", required=True)
+parser.add_argument("-o", "--output", help="output file name", required=True)
+parser.add_argument(
+    "-l", "--laps", help="number of top laps to report", default="1", type=int)
+args = parser.parse_args()
+
+print("Input file: %s" % args.input)
+print("Output file: %s" % args.output)
+print("Lap count: %s" % args.laps)
 
 CAR_MODEL_TYPES = {
     0: 'Porsche 911 (991) GT3 R',
@@ -58,10 +70,10 @@ class Driver:
             print(lap)
 
 
-def main(path):
+def main(self):
     # get in results file
     results_file = open(
-        path, "rb")
+        args.input, "rb")
     # parse it
     results_file_stringify = results_file.read()
     results_file.close()
@@ -75,23 +87,29 @@ def main(path):
     drivers_to_pop = []
     for driver_key in drivers:
         driver = drivers.get(driver_key)
-        if len(driver.laps) < 10:
+        if len(driver.laps) < args.laps:
             drivers_to_pop.append(str(driver.car_id) + ':' + str(driver.index))
         else:
             driver.laps.sort()
-            del driver.laps[10:]
+            del driver.laps[args.laps:]
 
     # pop, lock drop (this is the actual removal)
     for popper in drivers_to_pop:
         drivers.pop(popper)
 
     # and then we write to a csv, I can do this later
-    with open('raceSummary.csv', 'a', newline='') as f:
-        writer = csv.writer(f, quoting=csv.QUOTE_NONE)
+    with open(args.output, 'a', newline='') as f:
+        writer = csv.writer(f, quoting=csv.QUOTE_NONE,
+                            escapechar='')
+        writer.writerow(
+            ['driver_name', 'car', 'steam_id',
+                'lap_count', 'fastest_lap', 'next_fastest']
+        )
         for driver_key in drivers:
             driver = drivers.get(driver_key)
             writer.writerow(
-                [driver.name, driver.model, driver.steam_id, driver.car_lap_total, ':'.join(map(str, driver.laps))]
+                [driver.name, driver.model, driver.steam_id,
+                    driver.car_lap_total, ':'.join(map(str, driver.laps))]
             )
 
 
@@ -109,3 +127,7 @@ def create_driver_dict(leader_board_lines) -> dict:
             driver = Driver(i, leader_board_line)
             drivers[str(driver.car_id) + ':' + str(driver.index)] = driver
     return drivers
+
+
+if __name__ == '__main__':
+    main(args.input)
