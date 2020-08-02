@@ -46,7 +46,7 @@ class Driver:
         self.index = driver_index
         self.model = CAR_MODEL_TYPES.get(car_data['car']["carModel"])
         self.name = car_data['car']['drivers'][driver_index]['firstName'] + ' ' + \
-                    car_data['car']['drivers'][driver_index]['lastName']
+            car_data['car']['drivers'][driver_index]['lastName']
         self.steam_id = car_data['car']['drivers'][driver_index]['playerId']
         self.car_lap_total = car_data['timing']['lapCount']
         self.car_id = car_data['car']['carId']
@@ -57,15 +57,11 @@ class Driver:
         for lap in self.laps:
             print(lap)
 
-    def to_csv_row(self):
-        lap_string = ':'.join(map(str, self.laps))
-        return self.name + ',' + self.model + ',' + self.steam_id + ',' + str(self.car_lap_total) + ',' + lap_string
 
-
-def main(argv):
+def main(path):
     # get in results file
     results_file = open(
-        argv[0], "rb")
+        path, "rb")
     # parse it
     results_file_stringify = results_file.read()
     results_file.close()
@@ -94,10 +90,9 @@ def main(argv):
         writer = csv.writer(f, quoting=csv.QUOTE_NONE)
         for driver_key in drivers:
             driver = drivers.get(driver_key)
-            writer.writerow([driver.name, driver.model, driver.steam_id, driver.car_lap_total, ':'.join(map(str, driver.laps))])
-
-    # for driver_key in drivers:
-    #     drivers.get(driver_key).print_row()
+            writer.writerow(
+                [driver.name, driver.model, driver.steam_id, driver.car_lap_total, ':'.join(map(str, driver.laps))]
+            )
 
 
 def add_laps(drivers, laps):
@@ -114,7 +109,3 @@ def create_driver_dict(leader_board_lines) -> dict:
             driver = Driver(i, leader_board_line)
             drivers[str(driver.car_id) + ':' + str(driver.index)] = driver
     return drivers
-
-
-if __name__ == '__main__':
-    main(sys.argv[1:])
