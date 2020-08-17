@@ -1,6 +1,5 @@
-import json
 import csv
-import sys
+import json
 
 CAR_MODEL_TYPES = {
     0: 'Porsche 911 (991) GT3 R',
@@ -52,11 +51,6 @@ class Driver:
         self.car_id = car_data['car']['carId']
         self.laps = []
 
-    def print_row(self):
-        print(self.name + ' ' + self.model)
-        for lap in self.laps:
-            print(lap)
-
 
 def main(path):
     # get in results file
@@ -99,7 +93,7 @@ def add_laps(drivers, laps):
     for lap in laps:
         if lap['isValidForBest']:
             driver = drivers[str(lap['carId']) + ':' + str(lap['driverIndex'])]
-            driver.laps.append(lap['laptime'])
+            driver.lap_times.append(lap['laptime'])
 
 
 def create_driver_dict(leader_board_lines) -> dict:
